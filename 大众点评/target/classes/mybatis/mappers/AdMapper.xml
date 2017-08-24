@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tedu.comment.mapper.AdMapper">
+	<sql id="insertColumn">
+			#{createBy,jdbcType=VARCHAR},
+			#{createTime,jdbcType=DATE},
+			#{updateBy,jdbcType=VARCHAR},
+			#{updateTime,jdbcType=DATE}
+	</sql>
+	
+	<sql id="updateColumn">
+			update_by=#{updateBy,jdbcType=VARCHAR},
+			update_time=#{updateTime,jdbcType=DATE}
+	</sql>
+
+	<select id="findAll" resultType="Advert">
+		select * from advertisement_c	
+	</select>
+	<insert id="saveAd">
+		insert into advertisement_c	values(
+		#{adId},
+		#{adName},
+		#{url},
+		#{level},
+		#{remark},
+		#{viewTimes},
+		<include refid="insertColumn"/>
+		)
+	</insert>
+	<select id="findAdById" resultType="Advert">
+		select * from advertisement_c where ad_id=#{adId}	
+	</select>
+	
+	<delete id="deleteById">
+		delete from advertisement_c where ad_id in(
+		<foreach collection="array" item="adId" separator=",">
+			#{adId}	
+		</foreach>
+	)
+	</delete>
+	<update id="updateAd">
+		update advertisement_c set 
+		ad_name=#{adName},
+		<if test="url!=null">url=#{url},</if>	
+		level=#{level},
+		remark=#{remark},
+		<include refid="updateColumn"/>
+		where ad_id=#{adId}
+	</update>
+	
+	<select id="findAdvertsOrderByLevel" resultType="Advert">
+		select * from advertisement_c order by level limit #{begin},#{num}
+	</select>
+</mapper>
+ 

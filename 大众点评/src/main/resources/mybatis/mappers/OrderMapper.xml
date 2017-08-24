@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tedu.comment.mapper.OrderMapper">
+
+	<select id="findPOIByVid" resultMap="POIRM">
+		<![CDATA[select vc.vendor_name,oc.pay_time,count(*) ordernum,sum(oc.money) ordermoney,AVG(oc.money) avgprice,
+			AVG(oc.enviroment_score) environment,AVG(oc.taste_score) taste,AVG(oc.service_score) service
+		    from order_c oc,vendor_c vc 
+		    where oc.pay_time>=#{startdate} and oc.pay_time<=#{enddate} and oc.vendor_id=#{vendorId}
+		    and vc.vendor_id=#{vendorId} 
+		    group by year(oc.pay_time),month(oc.pay_time),day(oc.pay_time)]]>
+	</select>
+	<resultMap type="POI" id="POIRM">
+		<id column="vendor_name" property="vendorName"></id>
+		<result column="ordernum" property="ordernum"/>
+		<result column="pay_time" property="date"/>
+		<result column="ordermoney" property="orderMoney"/>
+		<result column="avgprice" property="avgprice"/>
+		<result column="environment" property="environment"/>
+		<result column="taste" property="taste"/>
+		<result column="service" property="service"/>
+	</resultMap>
+	
+	<select id="findOrderByVid" resultType="Order">
+		select * from order_c where vendor_id=#{vendorId} order by pay_time desc limit 10
+	</select>
+	
+	<select id="findAll" resultType="Order">
+	    select * from order_c
+	</select>
+	
+	<delete id="deleteOrderIds">
+	    delete from order_c where order_id in(
+	      <foreach collection="array" item="orderId" separator=",">
+	       #{orderId}
+	      </foreach>
+	    )
+	</delete>
+	
+	
+	<select id="findPois" resultMap="POIRM">
+		    select vc.vendor_name,oc.pay_time,count(*) ordernum,sum(oc.money) ordermoney,avg(oc.money) avgprice,
+			avg(oc.enviroment_score) environment,avg(oc.taste_score) taste,avg(oc.service_score) service
+		    from order_c oc,vendor_c vc 
+		    where date(oc.pay_time) = curdate() and vc.vendor_id= oc.vendor_id 
+		    group by oc.vendor_id 
+		    order by ordermoney desc
+	</select>
+	
+
+	<select id="findOrderAndVendorByUserId" resultType="OrderAndVendor">
+	    SELECT o.order_id,o.money,o.state,o.pay_time,v.url,v.remark,v.vendor_name
+        from order_c o left JOIN
+        vendor_c v on o.vendor_id=v.vendor_id
+        where o.user_id=#{userId}
+	</select>
+	
+
+	<delete id="deleteOrdersByVendorId">
+		delete from order_c where vendor_id in (
+			<foreach collection="array" item="id" separator=",">
+				#{id}
+			</foreach>
+		)
+	</delete>
+
+
+</mapper>
+ 

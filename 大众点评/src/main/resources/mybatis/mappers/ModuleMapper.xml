@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tedu.comment.mapper.ModuleMapper">
+	 <select id="findAllPage" resultMap="moduleRM">
+	 	select * from 
+		module_c
+		left join
+		(select module_id p_id,name p_name from module_c) p
+		on module_c.parent_id=p.p_id
+		order by order_no limit ${page},${pageno}
+	 </select>
+	 <select id="findAll" resultMap="moduleRM">
+	 	select * from 
+		module_c
+		left join
+		(select module_id p_id,name p_name from module_c) p
+		on module_c.parent_id=p.p_id
+		order by order_no 
+	 </select>
+	 <resultMap type="Module" id="moduleRM" autoMapping="true">
+	 	<id column="module_id" property="moduleId"/>
+	 	<association property="parentModule" javaType="Module">
+	 		<id column="p_id" property="moduleId"/>
+	 		<result column="p_name" property="name"/>
+	 	</association>
+	 </resultMap>
+	 <update id="updateState">
+	 	update module_c set state=#{state} where module_id=#{moduleId}
+	 </update>
+	 <delete id="deleteModule">
+	 	delete from module_c where module_id in (
+	 		<foreach collection="array" item="id" separator=",">
+	 			#{id}
+	 		</foreach>
+	 	)
+	 </delete>
+	 <insert id="saveModule">
+	 	insert into module_c values(
+		   #{moduleId},
+		   #{parentModule.moduleId},
+		   #{name},
+		   #{type},
+		   #{state},
+		   #{orderNo},
+		   #{remark},
+		   #{createBy,jdbcType=VARCHAR},
+		   #{createTime,jdbcType=DATE},
+		   #{updateBy,jdbcType=VARCHAR},
+		   #{updateTime,jdbcType=DATE}
+	 	)
+	 </insert>
+	 <select id="findOne" resultMap="moduleRM">
+	 	SELECT * FROM 
+	 	(select * from module_c where module_id=#{moduleId}) c
+		LEFT JOIN
+		(SELECT module_id p_id,NAME p_name FROM module_c) p
+		ON c.parent_id=p.p_id
+	 </select>
+	 <select id="findParent" resultType="Module">
+	 	select * from module_c
+	 </select>
+	 <update id="updateModule">
+	 	update module_c set 
+		   parent_id=#{parentModule.moduleId},
+		   name=#{name},
+		   type=#{type},
+		   state=#{state},
+		   order_no=#{orderNo},
+		   remark=#{remark},
+		   create_by=#{createBy,jdbcType=VARCHAR},
+		   create_time=#{createTime,jdbcType=DATE},
+		   update_by=#{updateBy,jdbcType=VARCHAR},
+		   update_time=#{updateTime,jdbcType=DATE}
+		   where module_id=#{moduleId}
+	 </update>
+	 
+	 <delete id="deleteRoleModuleByRoleId">
+	 	delete from role_module_c where role_id=#{roleId}
+	 </delete>
+	 
+	 <insert id="saveRoleModule">
+	 	insert into role_module_c (role_id,module_id) values (#{roleId},#{moduleId})
+	 </insert>
+	 
+	 <select id="findModuleIdByRoleId" resultType="string">
+	 	select module_id from role_module_c where role_id=#{roleId}
+	 </select>
+	 
+	 <delete id="deleteRoleModuleByRoleIds">
+	 	delete from role_module_c where role_id in (
+	 		<foreach collection="array" item="id" separator=",">
+	 			#{id}
+	 		</foreach>
+	 	)
+	 </delete>
+	 <delete id="deleteRoleModuleByModuleIds">
+	 	delete from role_module_c where module_id in (
+	 		<foreach collection="array" item="id" separator=",">
+	 			#{id}
+	 		</foreach>
+	 	)
+	 </delete>
+</mapper>
+ 

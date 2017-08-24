@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tedu.comment.mapper.StageVendorMapper">
+	<sql id="insertColumn">
+		#{createBy,jdbcType=VARCHAR},
+		#{createTime,jdbcType=DATE},
+		#{updateBy,jdbcType=VARCHAR},
+		#{updateTime,jdbcType=DATE}
+	</sql>
+	<update id="updateViewTimes">
+		update vendor_c set view_time=view_Time+1 where vendor_id=#{vendor.vendorId}
+	</update>
+	
+	<select id="findOne" resultType="Vendor">
+		select * from vendor_c where
+		vendor_id=#{vendorId};
+	</select>
+
+	<select id="findVendor" resultType="VendorInfo">
+		SELECT
+		AVG(o.score) avgScore,
+		AVG(o.enviroment_score) avgEnviromentScore,
+		AVG(o.taste_score)
+		avgTasteScore,AVG(o.service_score) avgServiceScore FROM
+		order_c o,
+		vendor_c v
+		WHERE o.vendor_id=v.vendor_id
+		AND o.vendor_id=#{vendorId}
+	</select>
+	<select id="findComment" resultMap="CommentRM">
+		SELECT * FROM
+		order_c o LEFT
+		JOIN user_c u
+		ON o.user_id=u.user_id
+		WHERE o.vendor_id=#{vendorId}
+	</select>
+
+	<resultMap type="Comment" id="CommentRM" >	
+		<result column="enviroment_score" property="enviromentScore"/>	
+		<result column="taste_score" property="tasteScore"/>
+		<result column="service_score" property="serviceScore"/>
+		<result column="comment_message" property="commentMessage"/>
+		<result column="comment_time" property="commentTime"/>
+		<result column="username" property="username"/>
+	</resultMap>
+	
+
+
+</mapper>
+ 

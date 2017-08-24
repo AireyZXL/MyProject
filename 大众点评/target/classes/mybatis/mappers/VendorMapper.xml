@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tedu.comment.mapper.VendorMapper">
+    <sql id="insertColumn">
+			#{createBy,jdbcType=VARCHAR},
+			#{createTime,jdbcType=DATE},
+			#{updateBy,jdbcType=VARCHAR},
+			#{updateTime,jdbcType=DATE}
+	</sql>
+	<select id="findAll" resultType="Vendor">
+		select * from vendor_c
+	</select>
+	<insert id="addVendor">
+	     insert into vendor_c values(
+	         #{vendorId},
+	         #{vendorName},
+	         #{city},
+	         #{address},
+	         #{telephone},
+	         #{category},
+	         #{price},
+	         #{url},
+	         #{remark},
+             #{viewTime},
+	        <include refid="insertColumn"/>
+	     )
+	</insert>
+	<delete id="deleteVendors">
+	   delete from vendor_c where vendor_id=(
+	     <foreach collection="array" item="vendorId">
+	       #{vendorId}
+	     </foreach>
+	   )
+	   
+	</delete>
+	<select id="findOne" resultType="Vendor">
+	    select * from vendor_c where vendor_id=#{vendorId}
+	</select>
+	<update id="updateVendor">
+	  update vendor_c set 
+	       vendor_name=#{vendorName},
+	       city=#{city},
+	       address=#{address},
+	       telephone=#{telephone},
+	       category=#{category},
+	       price=#{price},
+	       <if test="url!=null">url=#{url},</if>       
+	       remark=#{remark},
+	       update_time=#{updateTime}
+	       where vendor_id=#{vendorId}
+	</update>
+	<select id="findCity" resultType="City">
+	   select * from city;
+	</select>
+	
+	<select id="findBestVendorListOrderByScore" resultType="Vendor">
+		select *,avg(score) avg_score from vendor_c v
+		join (select vendor_id v_id,score from order_c) o
+		on v.vendor_id=o.v_id
+		where category=#{category}
+		group by vendor_id
+		order by avg_score desc
+		limit #{begin},#{num}
+	</select>
+	
+	<select id="findVendorListAfterFilter" resultType="Vendor" flushCache="false">
+		select v.*,ifnull(o.avg_score,0) avg_score,ifnull(o.avg_enviroment_score,0) avg_enviroment_score,ifnull(o.sale_num,0) sale_num,
+		ifnull(o.avg_taste_score,0) avg_taste_score,ifnull(o.avg_service_score,0) avg_service_score from
+		(select * from vendor_c 
+		where city=#{city} and category=#{category})
+		v
+		left outer join (select vendor_id v_id,avg(score) avg_score,avg(enviroment_score) avg_enviroment_score,
+			count(order_id) sale_num,avg(taste_score) avg_taste_score,avg(service_score) avg_service_score
+			from order_c
+			group by v_id) o
+		on v.vendor_id=o.v_id
+		order by ${rule} desc
+	</select>
+</mapper>
+ 

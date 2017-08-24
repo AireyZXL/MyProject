@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tedu.comment.mapper.AdminMapper">
+
+	<sql id="insertColumn">
+			#{createBy,jdbcType=VARCHAR},
+			#{createTime,jdbcType=DATE},
+			#{updateBy,jdbcType=VARCHAR},
+			#{updateTime,jdbcType=DATE}
+	</sql>
+	
+	<sql id="updateColumn">
+			update_by=#{updateBy,jdbcType=VARCHAR},
+			update_time=#{updateTime,jdbcType=DATE}
+	</sql>
+	<select id="findAdminByUserName" resultMap="adRM">
+		select * from
+		(select admin_id,password,username,state from 
+		admin_c where username = #{username}) a
+		left join admin_info_c  ai 
+		on a.admin_id=ai.admin_info_id
+	</select>
+	
+	<select id="findAllAdmins" resultMap="adRM">
+		select * from admin_c a
+		join (select admin_info_id,imgurl,name,card_no,birthday,gender,telephone,email,remark from admin_info_c) c
+		on a.admin_id=c.admin_info_id
+
+	</select>
+	<resultMap type="Admin" id="adRM" autoMapping="true">
+		<id column="admin_id" property="adminId"/>
+		<association property="info" javaType="AdminInfo">
+			<id column="admin_info_id" property="adminInfoId"/>
+			<result column="imgurl" property="imgurl"/>
+			<result column="name" property="name"/>
+			<result column="card_no" property="cardNo"/>
+			<result column="birthday" property="birthday"/>
+			<result column="gender" property="gender"/>
+			<result column="telephone" property="telephone"/>
+			<result column="email" property="email"/>
+			<result column="remark" property="remark"/>
+		</association>
+	</resultMap>
+	
+	<update id="updateAdminStateByAdminIds">
+		update admin_c set state=#{state}
+		where admin_id in (
+			<foreach collection="adminIds" item="id" separator=",">
+				#{id}
+			</foreach>
+		)
+	</update>
+	
+	<insert id="saveAdmin">
+		insert into admin_c (admin_id,password,username,state,create_by,create_time,update_by,update_time)
+		values (
+			#{adminId},
+			#{password},
+			#{username},
+			#{state},
+			<include refid="insertColumn"/>
+		)
+	</insert>
+	
+	
+	
+	<insert id="saveAdminInfo">
+		insert into admin_info_c (admin_info_id,create_by,create_time,update_by,update_time) values 
+		(
+			#{adminInfoId},
+			<include refid="insertColumn"/>
+		)
+	</insert>
+	
+	<delete id="deleteAdminByIds">
+		delete from admin_c where admin_id in (
+			<foreach collection="array" item="id" separator=",">
+				#{id}
+			</foreach>
+		)
+	</delete>
+	
+	<delete id="deleteAdminInfoByIds">
+		delete from admin_info_c where admin_info_id in (
+			<foreach collection="array" item="id" separator=",">
+				#{id}
+			</foreach>
+		)
+	</delete>
+	<select id="findAdminById" resultMap="adRM">	
+		select * from (select * from admin_c where admin_id=#{amdinId}) a
+		join (select admin_info_id,imgurl,name,card_no,birthday,gender,telephone,email,remark from admin_info_c) c
+		on a.admin_id=c.admin_info_id
+	</select>
+	
+	<update id="updateAdmin">
+		update admin_c set
+		<if test="state!=null">state=#{state},</if>
+		<include refid="updateColumn"/>
+		where admin_id=#{adminId}
+	</update>
+	
+	<update id="updateAdminInfo">
+		update admin_info_c set
+		<if test="imgurl!=null">imgurl=#{imgurl},</if>	
+		name=#{name},
+		card_no=#{cardNo},
+		birthday=#{birthday},
+		gender=#{gender},
+		telephone=#{telephone},
+		email=#{email},
+		remark=#{remark},
+		<include refid="updateColumn"/>
+		where admin_info_id=#{adminInfoId}
+	</update>
+	
+	<select id="findModuleNameListByAdminId" resultType="string">
+		select name from module_c where module_id in
+		(select module_id from role_module_c where role_id in
+		(select role_id from admin_role_c where admin_id=#{adminId}))
+	</select>
+</mapper>
+ 

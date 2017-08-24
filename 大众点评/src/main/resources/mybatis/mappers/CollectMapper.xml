@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tedu.comment.mapper.CollectMapper">
+	<delete id="deleteCollectByVendorId">
+		delete from collect_c where vendor_id in (
+			<foreach collection="array" item="id" separator=",">
+				#{id}
+			</foreach>
+		)
+	</delete>
+
+	<select id="findCollectsByUserId" resultMap="collectRM">
+		select * from 
+		(select collect_id,user_id,vendor_id v_id,collect_time from collect_c) c
+		join vendor_c v
+		on c.v_id=v.vendor_id
+		where user_id=#{userId}
+	</select>
+	<resultMap type="Collect" id="collectRM" autoMapping="true">
+		<id column="collect_id" property="collectId"/>
+		<association property="vendor" javaType="Vendor">
+			<id column="vendor_id" property="vendorId"/>
+			<result column="vendor_name" property="vendorName"/>
+			<result column="city" property="city"/>
+			<result column="address" property="address"/>
+			<result column="telephone" property="telephone"/>
+			<result column="category" property="category"/>
+			<result column="price" property="price"/>
+			<result column="url" property="url"/>
+			<result column="remark" property="remark"/>
+			<result column="create_by" property="createBy"/>
+			<result column="create_time" property="createTime"/>
+			<result column="update_by" property="updateBy"/>
+			<result column="update_time" property="updateTime"/>
+		</association>
+	</resultMap>
+	
+	<insert id="saveCollect">
+		insert into collect_c (collect_id,user_id,vendor_id,collect_time) 
+		values (
+			#{collectId},
+			#{userId},
+			#{vendor.vendorId},
+			#{collectTime}
+		);
+	</insert>
+	
+	<select id="findCollectByUserIdAndVendorId" resultType="Collect">
+		select * from collect_c where user_id=#{userId} and vendor_id=#{vendorId}
+	</select>
+	
+	<delete id="deleteCollectByCollectId">
+		delete from collect_c where collect_id=#{collectId}
+	</delete>
+</mapper>
+ 

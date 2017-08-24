@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tedu.comment.mapper.UserMapper">
+	<!--通过用户名查找用户  -->
+	<select id="findUserByUserName" resultMap="userRM">
+		select * from user_c where username = #{username}
+	</select>
+	
+	<!--查找用户  -->
+	<select id="findAll" resultMap="userRM">
+		select * from user_c
+	</select>
+	
+	<resultMap type="User" id="userRM" autoMapping="true">
+		<id column="user_id" property="userId"/>
+		<association property="userInfo" javaType="UserInfo">
+			<id column="user_info_id" property="userInfoId"/>
+			<result column="name" property="name"/>
+			<result column="card_no" property="cardNo"/>
+			<result column="birthday" property="birthday"/>
+			<result column="gender" property="gender"/>
+			<result column="telephone" property="telephone"/>
+			<result column="email" property="email"/>
+			<result column="remark" property="remark"/>
+			<result column="update_time" property="updateTime"/>
+		</association>
+	</resultMap>
+	<insert id="addUser">
+	   insert into user_c values(
+	      #{userId},
+	      #{password},
+	      #{username},
+	      #{state},
+	      #{registTime}
+	   )
+	</insert>
+	
+	<insert id="userinforegist">
+	   insert into user_info_c values(
+       		 #{userInfoId},
+			 #{name},	
+             #{cardNo},
+ 		     #{birthday},
+			 #{gender},
+			 #{telephone},
+			 #{email},
+			 #{remark},
+			 #{updateTime}
+	   )
+	</insert>
+	
+	<update id="updateUserStateByUserId">
+		update user_c set state=#{state}
+		where user_id in (
+			<foreach collection="userIds" item="id" separator=",">
+				#{id}
+			</foreach>
+		)
+	</update>
+</mapper>
+ 

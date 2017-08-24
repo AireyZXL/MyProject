@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tedu.comment.mapper.StageCityMapper">
+
+	<select id="findCityArea" resultType="String">
+		select city_area from city group by city_area 
+	</select>
+	
+	<!-- <select id="findCityByCityArea" resulType="cn.tedu.comment.pojo.City">
+		select * from city where city_area = #{cityArea}
+	</select> -->
+	
+</mapper>
+ 
